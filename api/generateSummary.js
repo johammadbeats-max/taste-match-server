@@ -4,13 +4,22 @@ module.exports = async (req, res) => {
   const { answers, questions } = req.body;
   const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
 
+  if (req.method !== 'POST') {
+    return res.status(405).json({ error: 'Only POST allowed' });
+  }
+  if (!answers || !questions) {
+    return res.status(400).json({ error: 'Missing answers or questions' });
+  }
+
   if (!OPENAI_API_KEY) return res.status(500).json({ error: 'Missing OpenAI API key' });
 
   const prompt = `
-Given these food survey questions and answers (0-10 scale), generate a fun, short personality name and a playful summary sentence for the user.
+Given these food survey questions and answers (0-10 scale), generate a fun, short personality name and a playful, judgmental, and brutally honest summary paragraph for the user. 
+Be witty, a little insulting, and don't hold back on calling out their weird or boring tastes. 
+Also, include a specific suggestion for what kind of restaurant or cuisine they should try next, based on their answers.
 Questions: ${questions.join(' | ')}
 Answers: ${answers.join(', ')}
-Respond as JSON: { "name": "...", "summary": "..." }
+Respond as JSON: { "name": "...", "summary": "...", "suggestion": "..." }
 `;
 
   try {
